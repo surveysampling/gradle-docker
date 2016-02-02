@@ -4,6 +4,7 @@ buildscript {
 }
 
 plugins {
+  id 'maven-publish'
   id 'groovy'
   id 'com.github.johnrengelman.shadow' version '1.2.2'
   id 'net.researchgate.release' version '2.3.5'
@@ -78,10 +79,6 @@ artifacts {
     archives jar
     archives javadocJar
     archives sourcesJar
-}
-
-shadowJar {
-  relocate 'se.transmode.gradle.plugins.docker', 'com.surveysampling.gradle.plugins'
 }
 
 afterReleaseBuild.dependsOn publish
