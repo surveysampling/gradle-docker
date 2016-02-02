@@ -83,3 +83,5 @@ artifacts {
 shadowJar {
   relocate 'se.transmode.gradle.plugins.docker', 'com.surveysampling.gradle.plugins'
 }
+
+afterReleaseBuild.dependsOn publish
