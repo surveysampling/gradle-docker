@@ -21,7 +21,9 @@ publishing {
                         appendNode('distribution', 'repo')
                     }
 
-                    appendNode('developers').appendNode('developer').with {
+                    final developersNode = appendNode('developers')
+
+                    developersNode.appendNode('developer').with {
                         appendNode('id', 'mattgruter')
                         appendNode('name', 'Matthias Grüter')
                         appendNode('email', 'matthias.gruter@transmode.com')
@@ -29,7 +31,7 @@ publishing {
 
                     }
 
-                    appendNode('developers').appendNode('developer').with {
+                    developersNode.appendNode('developer').with {
                         appendNode('id', 'pc')
                         appendNode('name', 'Pete Colapietro')
                         appendNode('email', 'pcssi@users.noreply.github.com')
@@ -54,7 +56,8 @@ publishing {
 
     repositories {
         maven {
-            url nexusUrl
+            println "${nexusUrl}${project.version.endsWith('-SNAPSHOT') ? '-snapshot' : '' }"
+            url "${nexusUrl}${project.version.endsWith('-SNAPSHOT') ? '-snapshot' : '' }"
             credentials {
                 username = nexusUsername
                 password = nexusPassword
