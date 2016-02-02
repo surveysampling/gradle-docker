@@ -13,7 +13,7 @@ publishing {
 
                     appendNode('name', 'gradle-docker')
                     appendNode('description', 'Gradle plugin to build und publish Docker images from the build script.')
-                    appendNode('url', 'https://github.com/Transmode/gradle-docker')
+                    appendNode('url', 'https://github.com/surveysampling/gradle-docker')
                     appendNode('inceptionYear', '2013')
 
                     appendNode('licenses').appendNode('license').with {
@@ -30,15 +30,23 @@ publishing {
 
                     }
 
+                    appendNode('developers').appendNode('developer').with {
+                        appendNode('id', 'pc')
+                        appendNode('name', 'Pete Colapietro')
+                        appendNode('email', 'pcssi@users.noreply.github.com')
+                        appendNode('roles').appendNode('role', 'Developer')
+
+                    }
+
                     appendNode('issueManagement').with {
                         appendNode('system', 'github')
-                        appendNode('url', 'https://github.com/Transmode/gradle-docker/issues')
+                        appendNode('url', 'https://github.com/surveysampling/gradle-docker/issues')
                     }
 
                     appendNode('scm').with {
-                        appendNode('connection', 'scm:git@github.com/Transmode/gradle-docker.git')
-                        appendNode('developerConnection', 'scm:git@github.com/Transmode/gradle-docker.git')
-                        appendNode('url', 'scm:git://github.com/Transmode/gradle-docker.git')
+                        appendNode('connection', 'scm:git@github.com/surveysampling/gradle-docker.git')
+                        appendNode('developerConnection', 'scm:git@github.com/surveysampling/gradle-docker.git')
+                        appendNode('url', 'scm:git://github.com/surveysampling/gradle-docker.git')
                     }
                 }
             }
