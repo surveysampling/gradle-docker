@@ -54,10 +54,10 @@ publishing {
 
     repositories {
         maven {
-            url 'https://api.bintray.com/maven/transmode/gradle-plugins/gradle-docker'
+            url nexusUrl
             credentials {
-                username = bintrayUser
-                password = bintrayKey
+                username = nexusUsername
+                password = nexusPassword
             }
         }
     }
