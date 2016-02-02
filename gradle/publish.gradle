@@ -1,5 +1,4 @@
 apply plugin: 'maven-publish'
-apply plugin: 'artifactory-publish'
 
 publishing {
     publications {
@@ -60,23 +59,6 @@ publishing {
                 username = bintrayUser
                 password = bintrayKey
             }
-        }
-    }
-}
-
-artifactory {
-    contextUrl = artifactoryUrl
-    resolve {
-        repoKey = "repo"
-    }
-    publish {
-        repository {
-            repoKey = artifactoryRepo
-            username = bintrayUser
-            password = bintrayKey
-        }
-        defaults {
-            publications ('maven')
         }
     }
 }
