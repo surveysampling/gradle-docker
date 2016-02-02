@@ -6,6 +6,7 @@ buildscript {
 plugins {
   id 'groovy'
   id 'com.github.johnrengelman.shadow' version '1.2.2'
+  id 'net.researchgate.release' version '2.3.5'
 }
 
 repositories {
