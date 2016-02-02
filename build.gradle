@@ -1,8 +1,11 @@
-apply plugin: 'groovy'
-
 buildscript {
     // inspired by https://github.com/Netflix/gradle-template
     apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+plugins {
+  id 'groovy'
+  id 'com.github.johnrengelman.shadow' version '1.2.2'
 }
 
 repositories {
@@ -74,4 +77,8 @@ artifacts {
     archives jar
     archives javadocJar
     archives sourcesJar
+}
+
+shadowJar {
+  relocate 'se.transmode.gradle.plugins.docker', 'com.surveysampling.gradle.plugins'
 }
