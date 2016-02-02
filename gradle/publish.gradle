@@ -56,7 +56,6 @@ publishing {
 
     repositories {
         maven {
-            println "${nexusUrl}${project.version.endsWith('-SNAPSHOT') ? '-snapshot' : '' }"
             url "${nexusUrl}${project.version.endsWith('-SNAPSHOT') ? '-snapshot' : '' }"
             credentials {
                 username = nexusUsername
