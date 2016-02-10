@@ -1,6 +1,8 @@
 
 shadowJar {
   relocate 'se.transmode.gradle.plugins.docker', 'com.surveysampling.gradle.plugins'
+  classifier = ''
+  baseName = project.name
 }
 
 publishing {
