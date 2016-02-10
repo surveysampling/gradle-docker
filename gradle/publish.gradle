@@ -7,8 +7,8 @@ shadowJar {
 
 publishing {
     publications {
-        shadow(MavenPublication) {
-            from components.shadow
+        maven(MavenPublication) {
+            from components.java
             artifact sourcesJar
             artifact javadocJar
 
