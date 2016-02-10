@@ -15,6 +15,13 @@ repositories {
     jcenter()
 }
 
+license {
+  header rootProject.file('codequality/HEADER')
+  excludes([
+    "se/transmode/gradle/plugins/docker/nginx.Dockerfile",
+    "se/transmode/gradle/plugins/docker/CreateDockerfileTest.groovy"])
+}
+
 apply from: file('gradle/idea.gradle')
 apply from: file('gradle/publish.gradle')
 
