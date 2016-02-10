@@ -20,7 +20,8 @@ license {
   excludes([
     // TODO Configure Gradle plugins
     "se/transmode/gradle/plugins/docker/nginx.Dockerfile",
-    "se/transmode/gradle/plugins/docker/CreateDockerfileTest.groovy"
+    "se/transmode/gradle/plugins/docker/CreateDockerfileTest.groovy",
+    "**/file*.txt"
   ])
   skipExistingHeaders = true
 }
