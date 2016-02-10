@@ -15,43 +15,114 @@
  */
 package se.transmode.gradle.plugins.docker.client;
 
+import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.BuildImageCmd;
+import com.github.dockerjava.api.command.PushImageCmd;
+import com.github.dockerjava.api.model.BuildResponseItem;
+import com.github.dockerjava.api.model.PushResponseItem;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.google.common.base.Preconditions;
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.lang.StringUtils;
 import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 
-public class JavaDockerClient extends com.github.dockerjava.client.DockerClient implements DockerClient {
+public class JavaDockerClient implements DockerClient {
+
+    private final DockerClientImpl DOCKER_CLIENT_INSTANCE;
 
     private static Logger log = Logging.getLogger(JavaDockerClient.class);
 
     JavaDockerClient() {
-        super();
+        DOCKER_CLIENT_INSTANCE = DockerClientImpl.getInstance();
     }
 
     JavaDockerClient(String url) {
-        super(url);
+        DOCKER_CLIENT_INSTANCE = DockerClientImpl.getInstance(url);
+    }
+
+    JavaDockerClient(final DockerClientConfig dockerClientConfig) {
+        DOCKER_CLIENT_INSTANCE = DockerClientImpl.getInstance(dockerClientConfig);
     }
 
     @Override
     public String buildImage(File buildDir, String tag) {
         Preconditions.checkNotNull(tag, "Image tag can not be null.");
         Preconditions.checkArgument(!tag.isEmpty(),  "Image tag can not be empty.");
-        ClientResponse response = buildImageCmd(buildDir).withTag(tag).exec();
-        return checkResponse(response);
+        final BuildImageCmd buildImageCmd = DOCKER_CLIENT_INSTANCE.buildImageCmd(buildDir).withTag(tag);
+        final ResultCallback<BuildResponseItem> buildResponseItemResultCallback = new ResultCallback<BuildResponseItem>() {
+            @Override
+            public void onStart(Closeable closeable) {
+
+            }
+
+            @Override
+            public void onNext(BuildResponseItem object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throw new GradleException(
+                        "Docker API error: Failed to build Image:\n" + throwable.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+        buildImageCmd.exec(buildResponseItemResultCallback);
+        return "build complete";
     }
 
     @Override
     public String pushImage(String tag) {
         Preconditions.checkNotNull(tag, "Image tag can not be null.");
         Preconditions.checkArgument(!tag.isEmpty(),  "Image tag can not be empty.");
-        ClientResponse response = pushImageCmd(tag).exec();
-        return checkResponse(response);
+        final PushImageCmd pushImageCmd = DOCKER_CLIENT_INSTANCE.pushImageCmd(tag);
+        final ResultCallback<PushResponseItem> pushResponseItemResultCallback = new ResultCallback<PushResponseItem>() {
+            @Override
+            public void onStart(Closeable closeable) {
+
+            }
+
+            @Override
+            public void onNext(PushResponseItem object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throw new GradleException(
+                        "Docker API error: Failed to build Image:\n" + throwable.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+        final ResultCallback<PushResponseItem> pushResponseItemResultCallback1 = pushImageCmd.exec(pushResponseItemResultCallback);
+        return "Push Complete";
     }
 
+        /*
     private static String checkResponse(ClientResponse response) {
         String msg = response.getEntity(String.class);
         if (response.getStatusInfo() != ClientResponse.Status.OK) {
@@ -60,6 +131,7 @@ public class JavaDockerClient extends com.github.dockerjava.client.DockerClient 
         }
         return msg;
     }
+        */
 
     public static JavaDockerClient create(String url, String user, String password, String email) {
         JavaDockerClient client;
@@ -73,7 +145,12 @@ public class JavaDockerClient extends com.github.dockerjava.client.DockerClient 
         }
 
         if (StringUtils.isNotEmpty(user)) {
-            client.setCredentials(user, password, email);
+            DockerClientConfig.DockerClientConfigBuilder dockerClientConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+            final DockerClientConfig dockerClientConfig = dockerClientConfigBuilder.withUsername(user)
+                    .withPassword(password)
+                    .withEmail(email)
+                    .withUri(url).build();
+            client = new JavaDockerClient(dockerClientConfig);
         }
 
         return client;
