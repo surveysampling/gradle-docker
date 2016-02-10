@@ -18,8 +18,11 @@ repositories {
 license {
   header rootProject.file('codequality/HEADER')
   excludes([
+    // TODO Configure Gradle plugins
     "se/transmode/gradle/plugins/docker/nginx.Dockerfile",
-    "se/transmode/gradle/plugins/docker/CreateDockerfileTest.groovy"])
+    "se/transmode/gradle/plugins/docker/CreateDockerfileTest.groovy"
+  ])
+  skipExistingHeaders = true
 }
 
 apply from: file('gradle/idea.gradle')
