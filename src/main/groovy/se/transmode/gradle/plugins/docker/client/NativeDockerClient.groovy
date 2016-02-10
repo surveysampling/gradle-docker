@@ -42,6 +42,7 @@ class NativeDockerClient implements DockerClient {
     }
 
     private static String executeAndWait(String cmdLine) {
+        println cmdLine
         def process = cmdLine.execute()
         def out = new StringBuffer()
         def err = new StringBuffer()
