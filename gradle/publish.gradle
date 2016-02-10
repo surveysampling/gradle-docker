@@ -1,7 +1,6 @@
 
 shadowJar {
   relocate 'se.transmode.gradle.plugins.docker', 'com.surveysampling.gradle.plugins'
-  mergeServiceFiles('META-INF/gradle-plugins')
 }
 
 publishing {
