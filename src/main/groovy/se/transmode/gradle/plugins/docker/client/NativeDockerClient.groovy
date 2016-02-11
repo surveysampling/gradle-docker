@@ -30,8 +30,8 @@ class NativeDockerClient implements DockerClient {
     NativeDockerClient(String binary) {
         Preconditions.checkArgument(binary as Boolean,  "Docker binary can not be empty or null.")
         this.binary = binary
-        // For Docker Versions < 1.7.0 when pushing to a private repository on Docker Hub use -f. FIXME
-        this.pushArgs = isDockerVersionLessThanOnePointSeven() ? "-f" : ""
+        // For Docker Versions < 1.10.0 when pushing to a private repository on Docker Hub use -f. FIXME
+        this.pushArgs = isDockerVersionLessThanOnePointTen() ? "-f" : ""
     }
 
     @Override
@@ -62,7 +62,7 @@ class NativeDockerClient implements DockerClient {
     }
 
     // FIXME This is a hack.
-    private static boolean isDockerVersionLessThanOnePointSeven() {
+    private static boolean isDockerVersionLessThanOnePointTen() {
         final cmdLine = "docker -v"
         final TIMEOUT_IN_MILLIS = 10000
         def process = cmdLine.execute()
@@ -73,8 +73,8 @@ class NativeDockerClient implements DockerClient {
         def processInputStreamText = IOUtils.toString(process.in, StandardCharsets.UTF_8);
         println processInputStreamText
         final listOfStrings = processInputStreamText.tokenize(', ').get(2).tokenize('.')
-        final isLessThanOnePointSeven = Integer.parseInt(listOfStrings[0]) <= 1 && Integer.parseInt(listOfStrings[1]) < 7
-        return isLessThanOnePointSeven
+        final isLessThanOnePointTen = Integer.parseInt(listOfStrings[0]) <= 1 && Integer.parseInt(listOfStrings[1]) < 10
+        return isLessThanOnePointTen
     }
 
 }
