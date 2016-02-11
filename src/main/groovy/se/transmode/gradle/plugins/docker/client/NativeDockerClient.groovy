@@ -16,7 +16,10 @@
 package se.transmode.gradle.plugins.docker.client
 
 import com.google.common.base.Preconditions
+import org.apache.commons.io.IOUtils
 import org.gradle.api.GradleException
+
+import java.nio.charset.StandardCharsets
 
 class NativeDockerClient implements DockerClient {
 
@@ -67,7 +70,7 @@ class NativeDockerClient implements DockerClient {
         if (process.exitValue()) {
             throw new GradleException("Docker execution failed\nCommand line [${cmdLine}] returned:\n${process.err.text}")
         }
-        def processInputStreamText = process.in.text
+        def processInputStreamText = IOUtils.toString(process.in, StandardCharsets.UTF_8);
         final listOfStrings = processInputStreamText.tokenize(', ').get(2).tokenize('.')
         final isLessThanOnePointSeven = Integer.parseInt(listOfStrings[0]) <= 1 && Integer.parseInt(listOfStrings[1]) < 7
         return isLessThanOnePointSeven
