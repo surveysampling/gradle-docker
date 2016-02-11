@@ -71,6 +71,7 @@ class NativeDockerClient implements DockerClient {
             throw new GradleException("Docker execution failed\nCommand line [${cmdLine}] returned:\n${process.err.text}")
         }
         def processInputStreamText = IOUtils.toString(process.in, StandardCharsets.UTF_8);
+        println processInputStreamText
         final listOfStrings = processInputStreamText.tokenize(', ').get(2).tokenize('.')
         final isLessThanOnePointSeven = Integer.parseInt(listOfStrings[0]) <= 1 && Integer.parseInt(listOfStrings[1]) < 7
         return isLessThanOnePointSeven
