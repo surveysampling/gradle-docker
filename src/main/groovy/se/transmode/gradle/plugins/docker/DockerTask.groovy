@@ -103,6 +103,7 @@ class DockerTask extends DefaultTask {
     DockerTask() {
         instructions = []
         stageBacklog = []
+        tagVersions = []
         applicationName = project.name
         stageDir = new File(project.buildDir, "docker")
     }
