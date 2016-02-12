@@ -88,12 +88,12 @@ public class JavaDockerClient implements DockerClient {
     }
 
     @Override
-    public String buildImage(File buildDir, List<String> tags) {
+    public String buildImage(File buildDir, String tagWithoutVersion, List<String> tags) {
         Preconditions.checkNotNull(tags, "Image tags can not be null.");
         Preconditions.checkArgument(!tags.isEmpty(),  "Image tags can not be empty.");
         BuildImageCmd buildImageCmd = DOCKER_CLIENT_INSTANCE.buildImageCmd(buildDir);
         for (String tag : tags) {
-            buildImageCmd = buildImageCmd.withTag(tag);
+            buildImageCmd = buildImageCmd.withTag(tagWithoutVersion + ":" + tag);
         }
         final ResultCallback<BuildResponseItem> buildResponseItemResultCallback = new ResultCallback<BuildResponseItem>() {
             @Override
@@ -161,17 +161,6 @@ public class JavaDockerClient implements DockerClient {
         final ResultCallback<PushResponseItem> pushResponseItemResultCallback1 = pushImageCmd.exec(pushResponseItemResultCallback);
         return "Push Complete";
     }
-
-        /*
-    private static String checkResponse(ClientResponse response) {
-        String msg = response.getEntity(String.class);
-        if (response.getStatusInfo() != ClientResponse.Status.OK) {
-            throw new GradleException(
-                    "Docker API error: Failed to build Image:\n"+msg);
-        }
-        return msg;
-    }
-        */
 
     public static JavaDockerClient create(String url, String user, String password, String email) {
         JavaDockerClient client;

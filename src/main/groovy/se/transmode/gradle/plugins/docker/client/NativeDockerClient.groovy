@@ -42,11 +42,11 @@ class NativeDockerClient implements DockerClient {
     }
 
     @Override
-    String buildImage(File buildDir, List<String> tags) {
+    String buildImage(File buildDir, String tagWithoutVersion, List<String> tags) {
         Preconditions.checkArgument(tags as Boolean,  "Image tags can not be empty or null.")
-        def tagsOptions
+        def tagsOptions = ""
         tags.each { tag ->
-            tagsOptions += "-t ${tag} "
+            tagsOptions += "-t ${tagWithoutVersion}:${tag} "
         }
         final cmdLine = "${binary} build ${tagsOptions} ${buildDir}"
         return executeAndWait(cmdLine)

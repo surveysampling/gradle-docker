@@ -181,6 +181,10 @@ class DockerTask extends DefaultTask {
         tagVersion = 'latest';
     }
 
+    void tagVersions(List<String> tagVersions) {
+        this.setTagVersions(tagVersions)
+    }
+
     void setTagVersions(List<String> tagVersions) {
         this.tagVersions = tagVersions
     }
@@ -243,19 +247,28 @@ class DockerTask extends DefaultTask {
     void build() {
         setupStageDir()
         buildDockerfile().writeToFile(new File(stageDir, 'Dockerfile'))
+        final tagWithoutVersion = this.tag
         tag = getImageTag()
         logger.info('Determining image tag: {}', tag)
 
         if (!dryRun) {
             DockerClient client = getClient()
 
-            if(tagVersions.isEmpty()) {
+
+            final isEmpty = tagVersions.isEmpty()
+            if(isEmpty) {
                 println client.buildImage(stageDir, tag)
             } else {
-                println client.buildImage(stageDir, tag)
+                println client.buildImage(stageDir, tagWithoutVersion, tagVersions)
             }
             if (push) {
-                println client.pushImage(tag)
+                if(isEmpty) {
+                    println client.pushImage(tag)
+                } else {
+                    tagVersions.each { taggedVersion ->
+                        println client.pushImage("${tagWithoutVersion}:${taggedVersion}")
+                    }
+                }
             }
         }
 
@@ -283,6 +296,14 @@ class DockerTask extends DefaultTask {
         def version = tagVersion ?: project.version
         if(version == 'unspecified') {
             version = 'latest'
+        }
+        //FIXME
+        if(!tagVersions.isEmpty()) {
+            tagVersions.each { tagVersion ->
+                if(tagVersion != 'latest') {
+                    version = tagVersion
+                }
+            }
         }
         return "${tag}:${version}"
 
