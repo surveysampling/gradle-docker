@@ -61,7 +61,7 @@ class NativeDockerClient implements DockerClient {
 
     private static String executeAndWait(String cmdLine) {
         println cmdLine
-        final TIMEOUT_IN_MILLIS = 120000
+        final TIMEOUT_IN_MILLIS = 240000
         def process = cmdLine.execute()
         process.consumeProcessOutput(System.out, System.err)
         println 'Requested to consume process output:'
