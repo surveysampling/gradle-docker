@@ -48,6 +48,8 @@ class DockerTask extends DefaultTask {
     Boolean push
     // Hostname, port of the docker image registry unless Docker Registry Hub is used
     String registry
+    // What to tag versions the created docker image with e.g. latest
+    List<String> tagVersions
 
     /**
      * Path to external Dockerfile
@@ -178,6 +180,10 @@ class DockerTask extends DefaultTask {
         tagVersion = 'latest';
     }
 
+    void setTagVersions(List<String> tagVersions) {
+        this.tagVersions = tagVersions
+    }
+
     void volume(String... paths) {
         instructions.add('VOLUME ["' + paths.join('", "') + '"]')
     }
@@ -241,7 +247,12 @@ class DockerTask extends DefaultTask {
 
         if (!dryRun) {
             DockerClient client = getClient()
-            println client.buildImage(stageDir, tag)
+
+            if(tagVersions.isEmpty()) {
+                println client.buildImage(stageDir, tag)
+            } else {
+                println client.buildImage(stageDir, tag)
+            }
             if (push) {
                 println client.pushImage(tag)
             }

@@ -31,6 +31,7 @@ import org.gradle.api.logging.Logging;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class JavaDockerClient implements DockerClient {
 
@@ -55,6 +56,45 @@ public class JavaDockerClient implements DockerClient {
         Preconditions.checkNotNull(tag, "Image tag can not be null.");
         Preconditions.checkArgument(!tag.isEmpty(),  "Image tag can not be empty.");
         final BuildImageCmd buildImageCmd = DOCKER_CLIENT_INSTANCE.buildImageCmd(buildDir).withTag(tag);
+        final ResultCallback<BuildResponseItem> buildResponseItemResultCallback = new ResultCallback<BuildResponseItem>() {
+            @Override
+            public void onStart(Closeable closeable) {
+
+            }
+
+            @Override
+            public void onNext(BuildResponseItem object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throw new GradleException(
+                        "Docker API error: Failed to build Image:\n" + throwable.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+        buildImageCmd.exec(buildResponseItemResultCallback);
+        return "build complete";
+    }
+
+    @Override
+    public String buildImage(File buildDir, List<String> tags) {
+        Preconditions.checkNotNull(tags, "Image tags can not be null.");
+        Preconditions.checkArgument(!tags.isEmpty(),  "Image tags can not be empty.");
+        BuildImageCmd buildImageCmd = DOCKER_CLIENT_INSTANCE.buildImageCmd(buildDir);
+        for (String tag : tags) {
+            buildImageCmd = buildImageCmd.withTag(tag);
+        }
         final ResultCallback<BuildResponseItem> buildResponseItemResultCallback = new ResultCallback<BuildResponseItem>() {
             @Override
             public void onStart(Closeable closeable) {
