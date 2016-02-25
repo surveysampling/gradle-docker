@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 package se.transmode.gradle.plugins.docker.client
-import com.google.common.base.Preconditions
-import org.apache.commons.io.IOUtils
-import org.gradle.api.GradleException
 
-import java.nio.charset.StandardCharsets
+import com.google.common.base.Preconditions
+import org.gradle.api.GradleException
 
 class NativeDockerClient implements DockerClient {
 
@@ -30,7 +28,11 @@ class NativeDockerClient implements DockerClient {
         Preconditions.checkArgument(binary as Boolean,  "Docker binary can not be empty or null.")
         this.binary = binary
         // For Docker Versions < 1.10.0 when pushing to a private repository on Docker Hub use -f. FIXME
-        this.pushArgs = isDockerVersionLessThanOnePointTen() ? "-f" : ""
+        this.pushArgs = isCentOSDocker() ? "-f" : ""
+    }
+
+    def Boolean isCentOSDocker() {
+        return true //FIXME
     }
 
     @Override
