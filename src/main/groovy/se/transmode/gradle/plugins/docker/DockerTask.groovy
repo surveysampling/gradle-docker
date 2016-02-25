@@ -21,7 +21,6 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskAction
 import se.transmode.gradle.plugins.docker.client.DockerClient
-import se.transmode.gradle.plugins.docker.client.NativeDockerClient
 import se.transmode.gradle.plugins.docker.image.Dockerfile
 
 class DockerTask extends DockerTaskBase {
@@ -35,10 +34,6 @@ class DockerTask extends DockerTaskBase {
     Boolean dryRun
     // Whether or not to push the image into the registry (default: false)
     Boolean push
-    // Hostname, port of the docker image registry unless Docker Registry Hub is used
-    String registry
-    // What to tag versions the created docker image with e.g. latest
-    List<String> tagVersions
 
     @Delegate(deprecated=true)
     LegacyDockerfileMethods legacyMethods
@@ -109,113 +104,9 @@ class DockerTask extends DockerTaskBase {
     File stageDir
     DockerTask() {
         instructions = []
-        stageBacklog = []
-        tagVersions = []
-        applicationName = project.name
         stageDir = new File(project.buildDir, "docker")
     }
     
-    void addFile(String source, String destination='/') {
-        addFile(project.file(source), destination)
-    }
-
-    void addFile(File source, String destination='/') {
-        def target = stageDir
-        if (source.isDirectory()) {
-            target = new File(stageDir, source.name)
-        }
-        stageBacklog.add { ->
-            project.copy {
-                from source
-                into target
-            }
-        }
-        instructions.add("ADD ${source.name} ${destination}")
-    }
-
-    void addFile(Closure copySpec) {
-        final tarFile = new File(stageDir, "add_${instructions.size()+1}.tar")
-        stageBacklog.add { ->
-            createTarArchive(tarFile, copySpec)
-        }
-        instructions.add("ADD ${tarFile.name} ${'/'}")
-    }
-
-    void createTarArchive(File tarFile, Closure copySpec) {
-        final tmpDir = Files.createTempDir()
-        logger.info("Creating tar archive {} from {}", tarFile, tmpDir)
-        /* copy all files to temporary directory */
-        project.copy {
-            with {
-                into('/') {
-                    with copySpec
-                }
-            }
-            into tmpDir
-        }
-        /* create tar archive */
-        new AntBuilder().tar(
-                destfile: tarFile,
-                basedir: tmpDir
-        )
-    }
-
-    void workingDir(String wd) {
-        instructions.add("WORKDIR ${wd}")
-    }
-
-    void addInstruction(String cmd, String value) {
-        instructions.add("${cmd} ${value}")
-    }
-
-    void runCommand(String command) {
-        instructions.add("RUN ${command}")
-    }
-
-    void exposePort(Integer... ports) {
-        instructions.add('EXPOSE ' + ports.join(' ').trim())
-    }
-
-    void setEnvironment(String key, String value) {
-        instructions.add("ENV ${key} ${value}")
-    }
-
-    void setTagVersion(String version) {
-        tagVersion = version;
-    }
-
-    void setTagVersionToLatest() {
-        tagVersion = 'latest';
-    }
-
-    void tagVersions(List<String> tagVersions) {
-        this.setTagVersions(tagVersions)
-    }
-
-    void setTagVersions(List<String> tagVersions) {
-        this.tagVersions = tagVersions
-    }
-
-    void volume(String... paths) {
-        instructions.add('VOLUME ["' + paths.join('", "') + '"]')
-    }
-
-    void setEntryPoint(List entryPoint) {
-        instructions.add('ENTRYPOINT ["' + entryPoint.join('", "') + '"]')
-    }
-
-    void entryPoint(List entryPoint) {
-        this.setEntryPoint(entryPoint)
-    }
-
-    void setDefaultCommand(List cmd) {
-        instructions.add('CMD ["' + cmd.join('", "') + '"]')
-    }
-
-    void defaultCommand(List cmd) {
-        this.setDefaultCommand(cmd)
-    }
-
     void contextDir(String contextDir) {
         stageDir = new File(stageDir, contextDir)
     }
@@ -251,59 +142,17 @@ class DockerTask extends DockerTaskBase {
     void build() {
         setupStageDir()
         buildDockerfile().writeToFile(new File(stageDir, 'Dockerfile'))
-        final tagWithoutVersion = this.tag
         tag = getImageTag()
         logger.info('Determining image tag: {}', tag)
 
         if (!dryRun) {
             DockerClient client = getClient()
-
-
-            final isEmpty = tagVersions.isEmpty()
-            if(isEmpty) {
             println client.buildImage(stageDir, tag)
-            } else {
-                println client.buildImage(stageDir, tagWithoutVersion, tagVersions)
-            }
             if (push) {
-                if(isEmpty) {
                 println client.pushImage(tag)
-                } else {
-                    tagVersions.each { taggedVersion ->
-                        println client.pushImage("${tagWithoutVersion}:${taggedVersion}")
-            }
-        }
             }
         }
 
     }
-
-    private String getDefaultImageTag() {
-        String tag
-        if (registry) {
-            tag = "${-> registry}/${-> applicationName}"
-        } else if (project.group) {
-            tag = "${-> project.group}/${-> applicationName}"
-        } else {
-            tag = "${-> applicationName}"
-        }
-        return tag
-    }
-
-    private String appendImageTagVersion(String tag) {
-        def version = tagVersion ?: project.version
-        if(version == 'unspecified') {
-            version = 'latest'
-        }
-        //FIXME
-        if(!tagVersions.isEmpty()) {
-            tagVersions.each { tagVersion ->
-                if(tagVersion != 'latest') {
-                    version = tagVersion
-                }
-            }
-        }
-        return "${tag}:${version}"
-
-    }
+    
 }
