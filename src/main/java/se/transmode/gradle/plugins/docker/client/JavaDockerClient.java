@@ -23,6 +23,7 @@ import com.github.dockerjava.api.model.PushResponseItem;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
@@ -32,6 +33,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class JavaDockerClient implements DockerClient {
 
@@ -184,4 +186,10 @@ public class JavaDockerClient implements DockerClient {
 
         return client;
     }
+
+    @Override
+    public String run(String tag, String containerName, boolean detached, boolean autoRemove, Map<String, String> env, Map<String, String> ports, Map<String, String> volumes, List<String> volumesFrom, List<String> links) {
+        throw new NotImplementedException();
+    }
+
 }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package se.transmode.gradle.plugins.docker.client
-
 import com.google.common.base.Preconditions
 import org.apache.commons.io.IOUtils
 import org.gradle.api.GradleException
@@ -37,7 +36,7 @@ class NativeDockerClient implements DockerClient {
     @Override
     String buildImage(File buildDir, String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        final cmdLine = "${binary} build -t ${tag} ${buildDir}"
+        def cmdLine = [binary, "build", "-t", tag, buildDir.toString()]
         return executeAndWait(cmdLine)
     }
 
@@ -55,37 +54,63 @@ class NativeDockerClient implements DockerClient {
     @Override
     String pushImage(String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        final cmdLine = "${binary} push ${pushArgs} ${tag}"
+        def cmdLine = [binary, "push", tag]
         return executeAndWait(cmdLine)
     }
 
-    private static String executeAndWait(String cmdLine) {
-        println cmdLine
-        final TIMEOUT_IN_MILLIS = 240000
+    private static String executeAndWait(List<String> cmdLine) {
         def process = cmdLine.execute()
-        process.consumeProcessOutput(System.out, System.err)
-        println 'Requested to consume process output:'
-        process.waitForOrKill(TIMEOUT_IN_MILLIS)
+        process.waitForProcessOutput(System.out, System.err)
         if (process.exitValue()) {
-            throw new GradleException("Docker execution failed\nCommand line [${cmdLine}] returned:\n${process.err.text}")
+            throw new GradleException("Docker execution failed\nCommand line [${cmdLine}]")
         }
-        return process.in.text
+        return "Done"
     }
 
-    // FIXME This is a hack.
-    private static boolean isDockerVersionLessThanOnePointTen() {
-        final cmdLine = "docker -v"
-        final TIMEOUT_IN_MILLIS = 10000
-        def process = cmdLine.execute()
-        process.waitForOrKill(TIMEOUT_IN_MILLIS)
-        if (process.exitValue()) {
-            throw new GradleException("Docker execution failed\nCommand line [${cmdLine}] returned:\n${process.err.text}")
+    @Override
+    String run(String tag, String containerName, boolean detached, boolean autoRemove, 
+            Map<String, String> env,
+            Map<String, String> ports, Map<String, String> volumes, List<String> volumesFrom,
+            List<String> links) {
+        Preconditions.checkArgument(tag as Boolean,  "Image tag cannot be empty or null.")
+        Preconditions.checkArgument(containerName as Boolean,  "Image name cannot be empty or null.")
+        Preconditions.checkArgument(env != null,  "Environment map cannot be null.")
+        Preconditions.checkArgument(ports != null,  "Exported port map cannot be null.")
+        Preconditions.checkArgument(volumes != null,  "Volume map cannot be null.")
+        Preconditions.checkArgument(volumesFrom != null,  "Volumes from list cannot be null.")
+        Preconditions.checkArgument(links != null,  "Link list cannot be null.")
+        Preconditions.checkArgument(!detached || !autoRemove,
+            "Cannot set both detached and autoRemove options to true.");
+
+        def detachedArg = detached ? '-d' : ''
+        def removeArg = autoRemove ? '--rm' : ''
+        def List<String> cmdLine = [binary, "run", detachedArg, removeArg, "--name" , containerName]
+        cmdLine = appendArguments(cmdLine, env, "--env", '=')
+        cmdLine = appendArguments(cmdLine, ports, "--publish")
+        cmdLine = appendArguments(cmdLine, volumes, "--volume")
+        cmdLine = appendArguments(cmdLine, volumesFrom, "--volumes-from")
+        cmdLine = appendArguments(cmdLine, links, "--link")
+        cmdLine.add(tag)
+        return executeAndWait(cmdLine)
+    }
+
+    private static List<String> appendArguments(List<String> cmdLine, Map<String, String> map, String option,
+            String separator = ':') {
+        // Add each entry in the map as the indicated argument
+        map.each { key, value ->
+            cmdLine.add(option);
+            cmdLine.add("${key}${separator}${value}")
         }
-        def processInputStreamText = IOUtils.toString(process.in, StandardCharsets.UTF_8);
-        println processInputStreamText
-        final listOfStrings = processInputStreamText.tokenize(', ').get(2).tokenize('.')
-        final isLessThanOnePointTen = Integer.parseInt(listOfStrings[0]) <= 1 && Integer.parseInt(listOfStrings[1]) < 10
-        return isLessThanOnePointTen
+        return cmdLine
+    }
+
+    private static List<String> appendArguments(List<String> cmdLine, List<String> list, String option) {
+        // Add each entry in the map as the indicated argument
+        list.each {
+            cmdLine.add(option);
+            cmdLine.add(it);
+        }
+        return cmdLine
     }
 
 }
