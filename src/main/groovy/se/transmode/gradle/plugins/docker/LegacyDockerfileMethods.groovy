@@ -72,7 +72,7 @@ class LegacyDockerfileMethods implements GroovyInterceptable {
      */
     @Deprecated
     void entryPoint(List entryPoint) {
-        dockerfile.entrypoint(cmd)
+        dockerfile.entrypoint(entryPoint)
     }
 
     /**
