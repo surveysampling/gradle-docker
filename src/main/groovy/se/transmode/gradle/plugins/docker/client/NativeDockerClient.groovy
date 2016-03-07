@@ -48,7 +48,8 @@ class NativeDockerClient implements DockerClient {
     @Override
     String buildImage(File buildDir, String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", "-t", tag, buildDir.toString()].removeAll([null])
+        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", "-t", tag, buildDir.toString()]
+        cmdLine.removeAll([null])
         return executeAndWait(cmdLine)
     }
 
@@ -59,14 +60,16 @@ class NativeDockerClient implements DockerClient {
         tags.each { tag ->
             tagsOptions += "-t ${tagWithoutVersion}:${tag} "
         }
-        final cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", tagsOptions.split(' '), buildDir.toString()].removeAll([null])
+        final cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", tagsOptions.split(' '), buildDir.toString()]
+        cmdLine.removeAll([null])
         return executeAndWait(cmdLine)
     }
 
     @Override
     String pushImage(String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "push", tag].removeAll([null])
+        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "push", tag]
+        cmdLine.removeAll([null])
         return executeAndWait(cmdLine)
     }
 
@@ -96,7 +99,8 @@ class NativeDockerClient implements DockerClient {
 
         def detachedArg = detached ? '-d' : ''
         def removeArg = autoRemove ? '--rm' : ''
-        def List<String> cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "run", detachedArg, removeArg, "--name" , containerName].removeAll([null])
+        def List<String> cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "run", detachedArg, removeArg, "--name" , containerName]
+        cmdLine.removeAll([null])
         cmdLine = appendArguments(cmdLine, env, "--env", '=')
         cmdLine = appendArguments(cmdLine, ports, "--publish")
         cmdLine = appendArguments(cmdLine, volumes, "--volume")
