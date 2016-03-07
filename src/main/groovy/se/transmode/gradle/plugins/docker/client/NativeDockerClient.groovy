@@ -27,12 +27,19 @@ class NativeDockerClient implements DockerClient {
     NativeDockerClient(String binary) {
         Preconditions.checkArgument(binary as Boolean,  "Docker binary can not be empty or null.")
         this.binary = binary
-        // For Docker Versions < 1.10.0 when pushing to a private repository on Docker Hub use -f. FIXME
         this.pushArgs = isCentOSDocker() ? "-f" : ""
     }
 
-    def Boolean isCentOSDocker() {
-        return true //FIXME
+    private static Boolean isCentOSDocker() {
+        final cmdLine = "docker -v"
+        final TIMEOUT_IN_MILLIS = 10000
+        final process = cmdLine.execute()
+        process.waitForOrKill(TIMEOUT_IN_MILLIS)
+        final exitValue = process.exitValue()
+        if (exitValue) { // http://groovy-lang.org/semantics.html#_numbers
+            throw new GradleException("Docker execution failed\nCommand line [${cmdLine}] returned:\n${process.err.text}")
+        }
+        return process.text.contains("centos")
     }
 
     @Override
