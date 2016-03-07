@@ -23,11 +23,13 @@ class NativeDockerClient implements DockerClient {
     private final String binary;
 
     private final String pushArgs;
+    private final boolean isCentOSDockerBinary
 
     NativeDockerClient(String binary) {
         Preconditions.checkArgument(binary as Boolean,  "Docker binary can not be empty or null.")
         this.binary = binary
-        this.pushArgs = isCentOSDocker() ? "-f" : ""
+        this.isCentOSDockerBinary = isCentOSDocker()
+        this.pushArgs = isCentOSDockerBinary ? "-f" : ""
     }
 
     private static Boolean isCentOSDocker() {
@@ -45,7 +47,7 @@ class NativeDockerClient implements DockerClient {
     @Override
     String buildImage(File buildDir, String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        def cmdLine = [binary, "build", "-t", tag, buildDir.toString()]
+        def cmdLine = [isCentOSDockerBinary ? "sudo" : "", binary, "build", "-t", tag, buildDir.toString()]
         return executeAndWait(cmdLine)
     }
 
@@ -56,14 +58,14 @@ class NativeDockerClient implements DockerClient {
         tags.each { tag ->
             tagsOptions += "-t ${tagWithoutVersion}:${tag} "
         }
-        final cmdLine = "${binary} build ${tagsOptions} ${buildDir}"
+        final cmdLine = [isCentOSDockerBinary ? "sudo" : "", binary, "build", tagsOptions.split(' '), buildDir.toString()]
         return executeAndWait(cmdLine)
     }
 
     @Override
     String pushImage(String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        def cmdLine = [binary, "push", tag]
+        def cmdLine = [isCentOSDockerBinary ? "sudo" : "", binary, "push", tag]
         return executeAndWait(cmdLine)
     }
 
@@ -93,7 +95,7 @@ class NativeDockerClient implements DockerClient {
 
         def detachedArg = detached ? '-d' : ''
         def removeArg = autoRemove ? '--rm' : ''
-        def List<String> cmdLine = [binary, "run", detachedArg, removeArg, "--name" , containerName]
+        def List<String> cmdLine = [isCentOSDockerBinary ? "sudo" : "", binary, "run", detachedArg, removeArg, "--name" , containerName]
         cmdLine = appendArguments(cmdLine, env, "--env", '=')
         cmdLine = appendArguments(cmdLine, ports, "--publish")
         cmdLine = appendArguments(cmdLine, volumes, "--volume")
