@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 package se.transmode.gradle.plugins.docker
+
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.io.Files
 import org.gradle.api.Task
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -34,6 +34,12 @@ class DockerTask extends DockerTaskBase {
     Boolean dryRun
     // Whether or not to push the image into the registry (default: false)
     Boolean push
+    // What to tag versions the created docker image with e.g. latest
+    List<String> tagVersions
+    // Dockerfile instructions (ADD, RUN, etc.)
+    def instructions
+    // Dockerfile staging area i.e. context dir
+    File stageDir
 
     @Delegate(deprecated=true)
     LegacyDockerfileMethods legacyMethods
@@ -97,16 +103,20 @@ class DockerTask extends DockerTaskBase {
         return baseImage ?: (project[DockerPlugin.EXTENSION_NAME].baseImage ?: defaultImage)
     }
 
-
-    // Dockerfile instructions (ADD, RUN, etc.)
-    def instructions
-    // Dockerfile staging area i.e. context dir
-    File stageDir
     DockerTask() {
         instructions = []
+        tagVersions = []
         stageDir = new File(project.buildDir, "docker")
     }
-    
+
+    void tagVersions(List<String> tagVersions) {
+        this.setTagVersions(tagVersions)
+    }
+
+    void setTagVersions(List<String> tagVersions) {
+        this.tagVersions = tagVersions
+    }
+
     void contextDir(String contextDir) {
         stageDir = new File(stageDir, contextDir)
     }
@@ -116,7 +126,7 @@ class DockerTask extends DockerTaskBase {
             dir.mkdirs()
         return dir
     }
-
+    
     @VisibleForTesting
     protected void setupStageDir() {
         logger.info('Setting up staging directory.')
@@ -142,17 +152,22 @@ class DockerTask extends DockerTaskBase {
     void build() {
         setupStageDir()
         buildDockerfile().writeToFile(new File(stageDir, 'Dockerfile'))
+        final tagWithoutVersion = this.tag
         tag = getImageTag()
         logger.info('Determining image tag: {}', tag)
 
         if (!dryRun) {
             DockerClient client = getClient()
-            println client.buildImage(stageDir, tag)
+            final isEmpty = tagVersions.isEmpty()
+            if(isEmpty) {
+                println client.buildImage(stageDir, tag)
+            } else {
+                println client.buildImage(stageDir, tagWithoutVersion, tagVersions)
+            }
             if (push) {
-                println client.pushImage(tag)
+                    println client.pushImage(tag)
             }
         }
-
     }
-    
+
 }
