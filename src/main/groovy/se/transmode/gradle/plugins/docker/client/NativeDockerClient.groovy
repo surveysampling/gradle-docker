@@ -20,9 +20,10 @@ import org.gradle.api.GradleException
 
 class NativeDockerClient implements DockerClient {
 
-    private final String binary;
+    private final String binary
 
-    private final String pushArgs;
+    private final String pushArgs
+
     private final boolean isCentOSDockerBinary
 
     NativeDockerClient(String binary) {
