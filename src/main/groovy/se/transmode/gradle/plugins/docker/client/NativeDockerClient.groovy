@@ -34,7 +34,7 @@ class NativeDockerClient implements DockerClient {
     }
 
     private static Boolean isCentOSDocker() {
-        final cmdLine = "docker -v"
+        final cmdLine = ["docker", "-v"]
         final TIMEOUT_IN_MILLIS = 10000
         final process = cmdLine.execute()
         process.waitForOrKill(TIMEOUT_IN_MILLIS)
