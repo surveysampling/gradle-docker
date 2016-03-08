@@ -56,11 +56,8 @@ class NativeDockerClient implements DockerClient {
     @Override
     String buildImage(File buildDir, String tagWithoutVersion, List<String> tags) {
         Preconditions.checkArgument(tags as Boolean,  "Image tags can not be empty or null.")
-        def tagsOptions = ""
-        tags.each { tag ->
-            tagsOptions += "-t ${tagWithoutVersion}:${tag} "
-        }
-        final cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", tagsOptions.split(' '), buildDir.toString()]
+        final tagsOptions = tags.collect { tag -> "-t ${tagWithoutVersion}:${tag} " }
+        final cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "build", tagsOptions, buildDir.toString()].flatten()
         cmdLine.removeAll([null])
         return executeAndWait(cmdLine)
     }
