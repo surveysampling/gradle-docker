@@ -65,7 +65,7 @@ class NativeDockerClient implements DockerClient {
     @Override
     String pushImage(String tag) {
         Preconditions.checkArgument(tag as Boolean,  "Image tag can not be empty or null.")
-        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "push", tag]
+        def cmdLine = [isCentOSDockerBinary ? "sudo" : null, binary, "push", isCentOSDockerBinary ? pushArgs : null, tag]
         cmdLine.removeAll([null])
         return executeAndWait(cmdLine)
     }
